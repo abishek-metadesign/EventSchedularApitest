@@ -45,7 +45,17 @@ public class BaseEventControllerExternalTest {
     protected void validateResponseAsPerSchema(String json, String schemaUrl) throws IOException, ProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode responseJsonNode = objectMapper.readTree(json);
-        JsonNode schemaJsonNode = JsonLoader.fromResource(schemaUrl);
+
+        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+        StackTraceElement stackTraceElement = stackTrace[1];
+        String packageName = stackTraceElement.getClassName();
+        int lastDotIndex = packageName.lastIndexOf('.');
+        if (lastDotIndex >= 0) {
+            packageName = packageName.substring(0, lastDotIndex);
+        }
+        packageName= packageName.replaceAll("\\.","/");
+        schemaUrl="src/test/java/"+packageName+schemaUrl;
+        JsonNode schemaJsonNode = JsonLoader.fromPath(schemaUrl);
         JsonSchemaFactory jsonSchemaFactory = JsonSchemaFactory.byDefault();
         JsonSchema jsonSchema = jsonSchemaFactory.getJsonSchema(schemaJsonNode);
         ProcessingReport validate = jsonSchema.validate(responseJsonNode);
