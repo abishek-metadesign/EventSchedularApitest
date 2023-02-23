@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "array",
+  "items": [
+    {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "title": {
+          "type": "string"
+        },
+        "startDate": {
+          "type": "string"
+        },
+        "endDate": {
+          "type": "string"
+        },
+        "scheduledDate": {
+          "type": "string"
+        },
+        "timePeriod": {
+          "type": "string"
+        },
+        "startTime": {
+          "type": "string"
+        },
+        "endTime": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "startDate",
+        "endDate",
+        "scheduledDate",
+        "timePeriod",
+        "startTime",
+        "endTime"
+      ]
+    }
+  ]
+}

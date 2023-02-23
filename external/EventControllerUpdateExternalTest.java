@@ -101,7 +101,7 @@ public class EventControllerUpdateExternalTest extends BaseEventControllerExtern
                 ).andExpect(mvcResult -> {
                     MockHttpServletResponse response = mvcResult.getResponse();
                     String contentAsString = response.getContentAsString();
-                    validateResponseAsPerSchema(contentAsString, "/createPlayerResponseSchema.json");
+                    validateResponseAsPerSchema(contentAsString, "/createEventResponseSchema.json");
                 });
             } catch (Exception e) {
                 throw new RuntimeException(e);

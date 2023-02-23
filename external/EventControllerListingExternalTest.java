@@ -3,13 +3,11 @@ package uk.co.metadesignsolutions.javachallenge.external;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import uk.co.metadesignsolutions.javachallenge.external.testlogger.Position;
-import uk.co.metadesignsolutions.javachallenge.external.testlogger.TestPrinter;
-
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import uk.co.metadesignsolutions.javachallenge.external.testlogger.Position;
+import uk.co.metadesignsolutions.javachallenge.external.testlogger.TestPrinter;
 import uk.co.metadesignsolutions.javachallenge.models.Event;
-
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
@@ -60,7 +58,7 @@ public class EventControllerListingExternalTest extends BaseEventControllerExter
                         .andExpect(mvcResult -> {
                             MockHttpServletResponse response = mvcResult.getResponse();
                             String contentAsString = response.getContentAsString();
-                            validateResponseAsPerSchema(contentAsString, "listPlayerResponseSchema.json");
+                            validateResponseAsPerSchema(contentAsString, "listEventResponseSchema.json");
                         });
             } catch (Exception e) {
                 throw new RuntimeException(e);
