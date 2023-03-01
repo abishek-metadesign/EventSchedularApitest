@@ -27,6 +27,10 @@ public class EventControllerCreateExternalTest extends BaseEventControllerExtern
 
     private static TestPrinter testPrinter;
 
+
+    private static String createSchema = "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"title\":{\"type\":\"string\"},\"startDate\":{\"type\":\"string\"},\"endDate\":{\"type\":\"string\"},\"startTime\":{\"type\":\"string\"},\"endTime\":{\"type\":\"string\"},\"timePeriod\":{\"type\":\"string\"},\"scheduledDate\":{\"type\":\"string\"}},\"required\":[\"id\",\"title\",\"startDate\",\"endDate\",\"startTime\",\"endTime\",\"timePeriod\",\"scheduledDate\"]}";
+
+
     @BeforeAll
     public static void setup(){
       testPrinter = new TestPrinter(" Event Creation Test");
@@ -86,7 +90,7 @@ public class EventControllerCreateExternalTest extends BaseEventControllerExtern
                     MockHttpServletResponse response = mvcResult.getResponse();
                     if (response.getStatus()==201 || response.getStatus()==200){
                         String contentAsString = response.getContentAsString();
-                        validateResponseAsPerSchema(contentAsString, "/createEventResponseSchema.json");
+                        validateResponseAsPerSchema(contentAsString, createSchema);
                     }else{
                         throw  new RuntimeException("request failed");
                     }

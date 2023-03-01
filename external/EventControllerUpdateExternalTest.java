@@ -22,6 +22,9 @@ public class EventControllerUpdateExternalTest extends BaseEventControllerExtern
 
     private static TestPrinter testPrinter;
 
+
+    private static String updateSchema = "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"title\":{\"type\":\"string\"},\"startDate\":{\"type\":\"string\"},\"endDate\":{\"type\":\"string\"},\"startTime\":{\"type\":\"string\"},\"endTime\":{\"type\":\"string\"},\"timePeriod\":{\"type\":\"string\"},\"scheduledDate\":{\"type\":\"string\"}},\"required\":[\"id\",\"title\",\"startDate\",\"endDate\",\"startTime\",\"endTime\",\"timePeriod\",\"scheduledDate\"]}";
+
     @BeforeAll
     public static void setup(){
         testPrinter = new TestPrinter();
@@ -103,7 +106,7 @@ public class EventControllerUpdateExternalTest extends BaseEventControllerExtern
                 ).andExpect(mvcResult -> {
                     MockHttpServletResponse response = mvcResult.getResponse();
                     String contentAsString = response.getContentAsString();
-                    validateResponseAsPerSchema(contentAsString, "/createEventResponseSchema.json");
+                    validateResponseAsPerSchema(contentAsString, updateSchema);
                 });
             } catch (Exception e) {
                 throw new RuntimeException(e.getMessage());

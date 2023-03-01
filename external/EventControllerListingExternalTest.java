@@ -15,6 +15,8 @@ public class EventControllerListingExternalTest extends BaseEventControllerExter
 
     private static TestPrinter testPrinter;
 
+    private  static String listSchema = "{\"$schema\":\"http://json-schema.org/draft-04/schema#\",\"type\":\"array\",\"items\":[{\"type\":\"object\",\"properties\":{\"id\":{\"type\":\"integer\"},\"title\":{\"type\":\"string\"},\"startDate\":{\"type\":\"string\"},\"endDate\":{\"type\":\"string\"},\"startTime\":{\"type\":\"string\"},\"endTime\":{\"type\":\"string\"},\"timePeriod\":{\"type\":\"string\"},\"scheduledDate\":{\"type\":\"string\"}},\"required\":[\"id\",\"title\",\"startDate\",\"endDate\",\"startTime\",\"endTime\",\"timePeriod\",\"scheduledDate\"]}]}";
+
     @BeforeAll
     public static void setup(){
         testPrinter = new TestPrinter();
@@ -58,7 +60,7 @@ public class EventControllerListingExternalTest extends BaseEventControllerExter
                         .andExpect(mvcResult -> {
                             MockHttpServletResponse response = mvcResult.getResponse();
                             String contentAsString = response.getContentAsString();
-                            validateResponseAsPerSchema(contentAsString, "/listEventResponseSchema.json");
+                            validateResponseAsPerSchema(contentAsString,listSchema);
                         });
             } catch (Exception e) {
                 throw new RuntimeException(e);
