@@ -17,16 +17,16 @@
         "endDate": {
           "type": "string"
         },
-        "scheduledDate": {
+        "startTime": {
+          "type": "string"
+        },
+        "endTime": {
           "type": "string"
         },
         "timePeriod": {
           "type": "string"
         },
-        "startTime": {
-          "type": "string"
-        },
-        "endTime": {
+        "scheduledDate": {
           "type": "string"
         }
       },
@@ -35,10 +35,10 @@
         "title",
         "startDate",
         "endDate",
-        "scheduledDate",
-        "timePeriod",
         "startTime",
-        "endTime"
+        "endTime",
+        "timePeriod",
+        "scheduledDate"
       ]
     }
   ]

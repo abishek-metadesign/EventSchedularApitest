@@ -14,12 +14,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.co.metadesignsolutions.javachallenge.enums.TimePeriod;
-import uk.co.metadesignsolutions.javachallenge.models.Event;
-import uk.co.metadesignsolutions.javachallenge.repositories.EventRepository;
+import uk.co.metadesgnsolutions.javachallenge.enums.TimePeriod;
+import uk.co.metadesgnsolutions.javachallenge.models.Event;
+import uk.co.metadesgnsolutions.javachallenge.repositories.EventRepository;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -67,11 +69,13 @@ public class BaseEventControllerExternalTest {
     protected Event getEvent(){
         Event event = new Event();
         event.setTitle(" meeting");
-        event.setStartDate(LocalDate.parse("2020/10/20"));
-        event.setEndDate(LocalDate.parse("2020/10/21"));
-        event.setPriority(2.5);
-        event.setStartTime("9:00");
-        event.setEndTime("10:00");
+        DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+        DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm");
+        event.setStartDate(LocalDate.parse("2020/10/20",format));
+        event.setEndDate(LocalDate.parse("2020/10/21",format));
+        event.setStartTime(LocalTime.parse("09:00",timeFormat));
+        event.setEndTime(LocalTime.parse("10:00",timeFormat));
+
         event.setTimePeriod(TimePeriod.ONE_HOUR);
         event.setScheduledDate(LocalDate.now());
         return event;
@@ -89,8 +93,9 @@ public class BaseEventControllerExternalTest {
         event.put("title","meeting");
         event.put("startDate","2021/10/20");
         event.put("endDate","2021/10/21");
-        event.put("priority",2.5);
         event.put("timePeriod","one_hour");
+        event.put("eventType","meeting");
+
         return event;
     }
 

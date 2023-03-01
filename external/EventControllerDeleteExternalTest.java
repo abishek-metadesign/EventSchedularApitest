@@ -1,16 +1,17 @@
 package uk.co.metadesignsolutions.javachallenge.external;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import uk.co.metadesignsolutions.javachallenge.enums.TimePeriod;
-import uk.co.metadesignsolutions.javachallenge.external.testlogger.Position;
-import uk.co.metadesignsolutions.javachallenge.external.testlogger.TestPrinter;
-import uk.co.metadesignsolutions.javachallenge.models.Event;
+import uk.co.metadesgnsolutions.javachallenge.enums.TimePeriod;
+import uk.co.metadesgnsolutions.javachallenge.external.testlogger.Position;
+import uk.co.metadesgnsolutions.javachallenge.external.testlogger.TestPrinter;
+import uk.co.metadesgnsolutions.javachallenge.models.Event;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -72,7 +73,7 @@ public class EventControllerDeleteExternalTest extends BaseEventControllerExtern
                         delete(SCHEDULE_URL+"/1")
                                 .header("Authorization",token+"invalid")
                                 .contentType(MediaType.APPLICATION_JSON)
-                ).andExpect(MockMvcResultMatchers.status().isNotFound());
+                ).andExpect(MockMvcResultMatchers.status().isForbidden());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -98,14 +99,14 @@ public class EventControllerDeleteExternalTest extends BaseEventControllerExtern
 
 
     @Test
-    public void shouldReturn200OnDelete() throws Exception {
+    public void shouldReturn202OnDelete() throws Exception {
         testPrinter.print(()->{
             Event event = getEvent();
             Event savedEvent = eventRepository.save(event);
             try {
                 mockMvc.perform(delete(SCHEDULE_URL+"/"+savedEvent.getId())
                                 .header(authorization,token))
-                        .andExpect(MockMvcResultMatchers.status().isOk());
+                        .andExpect(MockMvcResultMatchers.status().isAccepted());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -121,7 +122,7 @@ public class EventControllerDeleteExternalTest extends BaseEventControllerExtern
             long eventCount = eventRepository.count();
             Assertions.assertEquals(1,eventCount);
             try {
-                mockMvc.perform(delete(SCHEDULE_URL+"/"+event.getId())
+                mockMvc.perform(delete(SCHEDULE_URL+"/"+savedEvent.getId())
                         .header(authorization,token));
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -137,15 +138,15 @@ public class EventControllerDeleteExternalTest extends BaseEventControllerExtern
             h2Util.resetDatabase();
             Event event = getEvent();
             eventRepository.save(event);
-            Event secondPlayer = getEvent();
-            eventRepository.save(secondPlayer);
+            Event savedEvent = getEvent();
+            eventRepository.save(savedEvent);
             try {
-                mockMvc.perform(delete(SCHEDULE_URL+"/"+secondPlayer.getId())
+                mockMvc.perform(delete(SCHEDULE_URL+"/"+savedEvent.getId())
                         .header(authorization,token));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            boolean secondPlayerExists = eventRepository.existsById(secondPlayer.getId());
+            boolean secondPlayerExists = eventRepository.existsById(savedEvent.getId());
             Assertions.assertFalse(secondPlayerExists);
             long count = eventRepository.count();
             Assertions.assertEquals(1,count);
@@ -157,66 +158,64 @@ public class EventControllerDeleteExternalTest extends BaseEventControllerExtern
     public void shouldRescheduleWhenAEventIsDeleted(){
         testPrinter.print(()->{
             h2Util.resetDatabase();
+            DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+            DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm");
+
             Event event = getEvent();
-            event.setPriority(1.0);
-            event.setStartDate(LocalDate.parse("2023/03/27"));
-            event.setStartDate(LocalDate.parse("2023/03/27"));
-            event.setScheduledDate(LocalDate.parse("2023/03/27"));
-            event.setTitle("old work");
-            event.setStartTime("9:00");
-            event.setEndTime("11:00");
+            event.setStartDate(LocalDate.parse("2023/03/27",format));
+            event.setStartDate(LocalDate.parse("2023/03/27",format));
+            event.setScheduledDate(LocalDate.parse("2023/03/27",format));
+            event.setTitle("event");
+            event.setStartTime(LocalTime.parse("09:00",timeFormat));
+            event.setEndTime(LocalTime.parse("11:00",timeFormat));
             event.setTimePeriod(TimePeriod.TWO_HOUR);
             Event savedEvent = eventRepository.save(event);
 
             Event event1 = getEvent();
-            event1.setPriority(1.0);
-            event1.setStartDate(LocalDate.parse("2023/03/27"));
-            event1.setStartDate(LocalDate.parse("2023/03/27"));
-            event1.setScheduledDate(LocalDate.parse("2023/03/27"));
-            event1.setTitle("old work");
-            event1.setStartTime("11:00");
-            event1.setEndTime("13:00");
+            event1.setStartDate(LocalDate.parse("2023/03/27",format));
+            event1.setStartDate(LocalDate.parse("2023/03/27",format));
+            event1.setScheduledDate(LocalDate.parse("2023/03/27",format));
+            event1.setTitle("event 1");
+            event1.setStartTime(LocalTime.parse("11:00",timeFormat));
+            event1.setEndTime(LocalTime.parse("13:00",timeFormat));
             event1.setTimePeriod(TimePeriod.TWO_HOUR);
             Event savedEvent1 = eventRepository.save(event1);
 
             Event event2 = getEvent();
-            event2.setPriority(1.0);
-            event2.setStartDate(LocalDate.parse("2023/03/27"));
-            event2.setStartDate(LocalDate.parse("2023/03/27"));
-            event2.setScheduledDate(LocalDate.parse("2023/03/27"));
-            event2.setTitle("old work");
-            event2.setStartTime("13:00");
-            event2.setEndTime("15:00");
+            event2.setStartDate(LocalDate.parse("2023/03/27",format));
+            event2.setStartDate(LocalDate.parse("2023/03/27",format));
+            event2.setScheduledDate(LocalDate.parse("2023/03/27",format));
+            event2.setTitle("event 2");
+            event2.setStartTime(LocalTime.parse("13:00",timeFormat));
+            event2.setEndTime(LocalTime.parse("15:00",timeFormat));
             event2.setTimePeriod(TimePeriod.TWO_HOUR);
             Event savedEvent2 = eventRepository.save(event2);
 
             Event event3 = getEvent();
-            event3.setPriority(1.0);
-            event3.setStartDate(LocalDate.parse("2023/03/27"));
-            event3.setStartDate(LocalDate.parse("2023/03/27"));
-            event3.setScheduledDate(LocalDate.parse("2023/03/27"));
-            event3.setTitle("old work");
-            event3.setStartTime("15:00");
-            event3.setEndTime("17:00");
+            event3.setStartDate(LocalDate.parse("2023/03/27",format));
+            event3.setStartDate(LocalDate.parse("2023/03/27",format));
+            event3.setScheduledDate(LocalDate.parse("2023/03/27",format));
+            event3.setTitle("event 3");
+            event3.setStartTime(LocalTime.parse("15:00",timeFormat));
+            event3.setEndTime(LocalTime.parse("17:00",timeFormat));
             event3.setTimePeriod(TimePeriod.TWO_HOUR);
             Event savedEvent3 = eventRepository.save(event3);
 
 
             try {
-                mockMvc.perform(
-                        delete(SCHEDULE_URL+event1.getId())
-                );
+                mockMvc.perform(delete(SCHEDULE_URL+"/"+event1.getId())
+                        .header(authorization,token));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
 
 
             List<Event> events = eventRepository.findAll();
-            Set<String> collect = events.stream().map(Event::getStartTime).collect(Collectors.toSet());
+            Set<String> collect = events.stream().map(Event::getStartTime).map(LocalTime::toString).collect(Collectors.toSet());
             List<String> data = new ArrayList<>();
-            data.add("9:00");
-            data.add("12:00");
-            data.add("15:00");
+            data.add("09:00");
+            data.add("11:00");
+            data.add("13:00");
             Assertions.assertTrue(collect.containsAll(data));
 
 

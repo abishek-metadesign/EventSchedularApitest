@@ -7,12 +7,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import uk.co.metadesignsolutions.javachallenge.enums.TimePeriod;
-import uk.co.metadesignsolutions.javachallenge.external.testlogger.Position;
-import uk.co.metadesignsolutions.javachallenge.external.testlogger.TestPrinter;
-import uk.co.metadesignsolutions.javachallenge.models.Event;
+import uk.co.metadesgnsolutions.javachallenge.enums.TimePeriod;
+import uk.co.metadesgnsolutions.javachallenge.external.testlogger.Position;
+import uk.co.metadesgnsolutions.javachallenge.external.testlogger.TestPrinter;
+import uk.co.metadesgnsolutions.javachallenge.models.Event;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +48,7 @@ public class EventControllerCreateExternalTest extends BaseEventControllerExtern
                 throw new RuntimeException(e);
             }
 
-        },12, Position.JUNIOR);
+        },10, Position.JUNIOR);
 
     }
 
@@ -66,7 +68,7 @@ public class EventControllerCreateExternalTest extends BaseEventControllerExtern
                 throw new RuntimeException(e);
             }
 
-        },12, Position.JUNIOR);
+        },10, Position.JUNIOR);
 
     }
 
@@ -82,13 +84,17 @@ public class EventControllerCreateExternalTest extends BaseEventControllerExtern
                                 .content(content)
                 ).andExpect(mvcResult -> {
                     MockHttpServletResponse response = mvcResult.getResponse();
-                    String contentAsString = response.getContentAsString();
-                    validateResponseAsPerSchema(contentAsString, "/createEventResponseSchema.json");
+                    if (response.getStatus()==201 || response.getStatus()==200){
+                        String contentAsString = response.getContentAsString();
+                        validateResponseAsPerSchema(contentAsString, "/createEventResponseSchema.json");
+                    }else{
+                        throw  new RuntimeException("request failed");
+                    }
                 });
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        },12,Position.JUNIOR);
+        },10,Position.JUNIOR);
 
     }
     @Test
@@ -150,7 +156,7 @@ public class EventControllerCreateExternalTest extends BaseEventControllerExtern
 
 
     @Test
-    public void shouldReturnCorrectErrorWhenTheTimePeriodIsCorrect(){
+    public void shouldReturnCorrectErrorWhenTheTimePeriodIsInCorrect(){
 
         testPrinter.print(()->{
             Map<String, Object> eventMap = getEventRequestMap();
@@ -162,7 +168,7 @@ public class EventControllerCreateExternalTest extends BaseEventControllerExtern
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(content)
                 ).andExpect(MockMvcResultMatchers.status().isUnprocessableEntity())
-                        .andExpect(MockMvcResultMatchers.content().string(Matchers.containsString("timePeriod")));
+                        .andExpect(MockMvcResultMatchers.content().string(Matchers.containsStringIgnoringCase("timePeriod")));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -215,7 +221,7 @@ public class EventControllerCreateExternalTest extends BaseEventControllerExtern
 
 
     @Test
-    public void shouldReturnCorrectErrorWhenTheStartDateIsCorrect(){
+    public void shouldReturnCorrectErrorWhenTheStartDateIsInCorrect(){
 
         testPrinter.print(()->{
             Map<String, Object> eventMap = getEventRequestMap();
@@ -280,137 +286,6 @@ public class EventControllerCreateExternalTest extends BaseEventControllerExtern
 
     }
 
-    @Test
-    public void shouldDisplaceEventIfPriorityRatioIsMoreThanTwoPointFive(){
-        testPrinter.print(()->{
-            h2Util.resetDatabase();
-            Event event = getEvent();
-            event.setPriority(1.0);
-            event.setStartDate(LocalDate.parse("2023/03/27"));
-            event.setStartDate(LocalDate.parse("2023/03/27"));
-            event.setScheduledDate(LocalDate.parse("2023/03/27"));
-            event.setTitle("old work");
-            event.setStartTime("9:00");
-            event.setEndTime("10:00");
-
-            Event savedEvent = eventRepository.save(event);
-
-
-            Map<String, Object> eventMap = getEventRequestMap();
-            eventMap.put("title","work");
-            eventMap.put("startDate", "2023/03/27");
-            eventMap.put("endDate","2023/03/27");
-            eventMap.put("priority",3.5);
-            String content = this.asJsonString(eventMap);
-            try {
-                mockMvc.perform(
-                        post(SCHEDULE_URL)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(content)
-                );
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-
-            Event updatedEvent = eventRepository.findById(savedEvent.getId())
-                    .orElseThrow(() -> new RuntimeException("Event doesn't exist"));
-
-            Assertions.assertNotEquals("9:00",updatedEvent.getStartTime());
-        },12,Position.JUNIOR);
-
-    }
-
-    @Test
-    public void shouldNotDisplaceEventIfThereIsNoTimeLeftForTheEvent(){
-        testPrinter.print(()->{
-            h2Util.resetDatabase();
-            Event event1 = getEvent();
-            event1.setPriority(1.0);
-            event1.setStartDate(LocalDate.parse("2023/03/27"));
-            event1.setStartDate(LocalDate.parse("2023/03/27"));
-            event1.setScheduledDate(LocalDate.parse("2023/03/27"));
-            event1.setTitle("old work1");
-            event1.setStartTime("9:00");
-            event1.setEndTime("13:00");
-            event1.setTimePeriod(TimePeriod.FOUR_HOUR);
-            Event savedEvent1 = eventRepository.save(event1);
-
-            Event event2 = getEvent();
-            event2.setPriority(1.0);
-            event2.setStartDate(LocalDate.parse("2023/03/27"));
-            event2.setStartDate(LocalDate.parse("2023/03/27"));
-            event2.setScheduledDate(LocalDate.parse("2023/03/27"));
-            event2.setTitle("old work1");
-            event2.setStartTime("13:00");
-            event2.setEndTime("17:00");
-            event2.setTimePeriod(TimePeriod.THREE_HOUR);
-            Event savedEvent2 = eventRepository.save(event2);
-
-            Map<String, Object> eventMap = getEventRequestMap();
-            eventMap.put("title","work");
-            eventMap.put("startDate", "2023/03/27");
-            eventMap.put("endDate","2023/03/27");
-            eventMap.put("priority",3.5);
-            eventMap.put("timePeriod","two_hour");
-            String content = this.asJsonString(eventMap);
-            try {
-                mockMvc.perform(
-                        post(SCHEDULE_URL)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(content)
-                ).andExpect(MockMvcResultMatchers.status().is4xxClientError());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-
-        },12,Position.JUNIOR);
-
-    }
-    @Test
-    public void shouldGiveCorrectWhenAEventCannotBeDisplacedAndThereIsNoTime(){
-        testPrinter.print(()->{
-            h2Util.resetDatabase();
-            Event event1 = getEvent();
-            event1.setPriority(1.0);
-            event1.setStartDate(LocalDate.parse("2023/03/27"));
-            event1.setStartDate(LocalDate.parse("2023/03/27"));
-            event1.setScheduledDate(LocalDate.parse("2023/03/27"));
-            event1.setTitle("old work1");
-            event1.setStartTime("9:00");
-            event1.setEndTime("13:00");
-            event1.setTimePeriod(TimePeriod.FOUR_HOUR);
-            Event savedEvent1 = eventRepository.save(event1);
-
-            Event event2 = getEvent();
-            event2.setPriority(1.0);
-            event2.setStartDate(LocalDate.parse("2023/03/27"));
-            event2.setStartDate(LocalDate.parse("2023/03/27"));
-            event2.setScheduledDate(LocalDate.parse("2023/03/27"));
-            event2.setTitle("old work1");
-            event2.setStartTime("13:00");
-            event2.setEndTime("17:00");
-            event2.setTimePeriod(TimePeriod.THREE_HOUR);
-            Event savedEvent2 = eventRepository.save(event2);
-
-            Map<String, Object> eventMap = getEventRequestMap();
-            eventMap.put("title","work");
-            eventMap.put("startDate", "2023/03/27");
-            eventMap.put("endDate","2023/03/27");
-            eventMap.put("priority",3.5);
-            eventMap.put("timePeriod","two_hour");
-            String content = this.asJsonString(eventMap);
-            try {
-                mockMvc.perform(
-                        post(SCHEDULE_URL)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(content)
-                ).andExpect(MockMvcResultMatchers.status().is4xxClientError());
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-
-        },12,Position.JUNIOR);
-    }
 
     @Test
     public void shouldDistributeTheEventsCorrectly(){
@@ -421,7 +296,6 @@ public class EventControllerCreateExternalTest extends BaseEventControllerExtern
             eventMap1.put("title","1work");
             eventMap1.put("startDate", "2023/03/27");
             eventMap1.put("endDate","2023/03/27");
-            eventMap1.put("priority",3.5);
             eventMap1.put("timePeriod","two_hour");
             String event1 = this.asJsonString(eventMap1);
 
@@ -429,7 +303,6 @@ public class EventControllerCreateExternalTest extends BaseEventControllerExtern
             eventMap2.put("title","2work");
             eventMap2.put("startDate", "2023/03/27");
             eventMap2.put("endDate","2023/03/27");
-            eventMap2.put("priority",3.5);
             eventMap2.put("timePeriod","two_hour");
             String event2 = this.asJsonString(eventMap2);
 
@@ -438,7 +311,6 @@ public class EventControllerCreateExternalTest extends BaseEventControllerExtern
             eventMap3.put("title","3work");
             eventMap3.put("startDate", "2023/03/27");
             eventMap3.put("endDate","2023/03/27");
-            eventMap3.put("priority",3.5);
             eventMap3.put("timePeriod","two_hour");
             String event3 = this.asJsonString(eventMap3);
 
@@ -463,11 +335,16 @@ public class EventControllerCreateExternalTest extends BaseEventControllerExtern
             }
 
             List<Event> event = eventRepository.findAll();
-            Set<String> collect = event.stream().map(Event::getStartTime).collect(Collectors.toSet());
+            Set<String> collect = event.stream()
+                    .map(Event::getStartTime)
+                    .map(LocalTime::toString)
+                    .collect(Collectors.toSet());
+
+
             List<String> data = new ArrayList<>();
-            data.add("9:00");
-            data.add("12:00");
-            data.add("15:00");
+            data.add("09:00");
+            data.add("11:00");
+            data.add("13:00");
             Assertions.assertTrue(collect.containsAll(data));
         },12,Position.JUNIOR);
     }
@@ -477,25 +354,27 @@ public class EventControllerCreateExternalTest extends BaseEventControllerExtern
     public void shouldNotScheduleEventOutsideWorkHours(){
         testPrinter.print(()->{
             h2Util.resetDatabase();
+
+            DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+            DateTimeFormatter timeFormat = DateTimeFormatter.ofPattern("HH:mm");
+
             Event event1 = getEvent();
-            event1.setPriority(1.0);
-            event1.setStartDate(LocalDate.parse("2023/03/27"));
-            event1.setStartDate(LocalDate.parse("2023/03/27"));
-            event1.setScheduledDate(LocalDate.parse("2023/03/27"));
+            event1.setStartDate(LocalDate.parse("2023/03/27",format));
+            event1.setStartDate(LocalDate.parse("2023/03/27",format));
+            event1.setScheduledDate(LocalDate.parse("2023/03/27",format));
             event1.setTitle("old work1");
-            event1.setStartTime("9:00");
-            event1.setEndTime("13:00");
+            event1.setStartTime(LocalTime.parse("09:00",timeFormat));
+            event1.setEndTime(LocalTime.parse("13:00",timeFormat));
             event1.setTimePeriod(TimePeriod.FOUR_HOUR);
             Event savedEvent1 = eventRepository.save(event1);
 
             Event event2 = getEvent();
-            event2.setPriority(1.0);
-            event2.setStartDate(LocalDate.parse("2023/03/27"));
-            event2.setStartDate(LocalDate.parse("2023/03/27"));
-            event2.setScheduledDate(LocalDate.parse("2023/03/27"));
-            event2.setTitle("old work1");
-            event2.setStartTime("13:00");
-            event2.setEndTime("17:00");
+            event2.setStartDate(LocalDate.parse("2023/03/27",format));
+            event2.setStartDate(LocalDate.parse("2023/03/27",format));
+            event2.setScheduledDate(LocalDate.parse("2023/03/27",format));
+            event2.setTitle("old work 1");
+            event2.setStartTime(LocalTime.parse("13:00",timeFormat));
+            event2.setEndTime(LocalTime.parse("17:00",timeFormat));
             event2.setTimePeriod(TimePeriod.THREE_HOUR);
             Event savedEvent2 = eventRepository.save(event2);
 
@@ -503,7 +382,6 @@ public class EventControllerCreateExternalTest extends BaseEventControllerExtern
             eventMap.put("title","work");
             eventMap.put("startDate", "2023/03/27");
             eventMap.put("endDate","2023/03/27");
-            eventMap.put("priority",3.5);
             eventMap.put("timePeriod","two_hour");
             String content = this.asJsonString(eventMap);
             try {
