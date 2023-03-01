@@ -14,9 +14,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
-import uk.co.metadesgnsolutions.javachallenge.enums.TimePeriod;
-import uk.co.metadesgnsolutions.javachallenge.models.Event;
-import uk.co.metadesgnsolutions.javachallenge.repositories.EventRepository;
+import uk.co.metadesignsolutions.javachallenge.enums.TimePeriod;
+import uk.co.metadesignsolutions.javachallenge.models.Event;
+import uk.co.metadesignsolutions.javachallenge.repositories.EventRepository;
 
 import java.io.IOException;
 import java.time.LocalDate;

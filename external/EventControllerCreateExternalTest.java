@@ -7,10 +7,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import uk.co.metadesgnsolutions.javachallenge.enums.TimePeriod;
-import uk.co.metadesgnsolutions.javachallenge.external.testlogger.Position;
-import uk.co.metadesgnsolutions.javachallenge.external.testlogger.TestPrinter;
-import uk.co.metadesgnsolutions.javachallenge.models.Event;
+import uk.co.metadesignsolutions.javachallenge.enums.TimePeriod;
+import uk.co.metadesignsolutions.javachallenge.external.testlogger.Position;
+import uk.co.metadesignsolutions.javachallenge.external.testlogger.TestPrinter;
+import uk.co.metadesignsolutions.javachallenge.models.Event;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
